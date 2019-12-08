@@ -1,0 +1,5 @@
+rootProject.name = 'example'
+include ':react-native-create-thumbnail'
+project(':react-native-create-thumbnail').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-create-thumbnail/android')
+
+include ':app'

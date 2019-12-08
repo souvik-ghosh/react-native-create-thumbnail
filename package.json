@@ -1,8 +1,8 @@
 {
   "name": "react-native-create-thumbnail",
   "title": "React Native Create Thumbnail",
-  "version": "1.0.0",
-  "description": "TODO",
+  "version": "1.0.1",
+  "description": "iOS/Android thumbnail generator with support for both local and remote videos",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -58,6 +58,10 @@ createThumbnail({
 | width    | `Number` | Thumbnail width              |
 | height   | `Number` | Thumbnail height             |
 
+## Acknowledgements
+
+- [`react-native-thumbnail`](https://www.npmjs.com/package/react-native-thumbnail) - original basis of this project
+
 ## License
 
 _MIT_

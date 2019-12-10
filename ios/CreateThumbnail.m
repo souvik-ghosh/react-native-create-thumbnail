@@ -6,12 +6,14 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    NSString *url = (NSString *)[config objectForKey:@"url"];
-    int timeStamp = [[config objectForKey:@"timeStamp"] intValue];
+    NSString *url = (NSString *)[config objectForKey:@"url"] ?: @"";
+    int timeStamp = [[config objectForKey:@"timeStamp"] intValue] ?: 1;
+    NSString *type = (NSString *)[config objectForKey:@"type"] ?: @"remote";
+    NSString *format = (NSString *)[config objectForKey:@"format"] ?: @"jpeg";
     
     @try {
         NSURL *vidURL = nil;
-        if ([url  containsString: @"file://"]) {
+        if ([type isEqual: @"local"]) {
             url = [url stringByReplacingOccurrencesOfString:@"file://"
                                                   withString:@""];
             vidURL = [NSURL fileURLWithPath:url];
@@ -31,9 +33,17 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
         // save to temp directory
         NSString* tempDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
         
-        NSData *data = UIImageJPEGRepresentation(thumbnail, 1.0);
+        NSData *data = nil;
+        NSString *fullPath = nil;
+        if ([format isEqual: @"png"]) {
+            data = UIImagePNGRepresentation(thumbnail);
+            fullPath = [tempDirectory stringByAppendingPathComponent: [NSString stringWithFormat:@"thumb-%@.png",[[NSProcessInfo processInfo] globallyUniqueString]]];
+        } else {
+            data = UIImageJPEGRepresentation(thumbnail, 1.0);
+            fullPath = [tempDirectory stringByAppendingPathComponent: [NSString stringWithFormat:@"thumb-%@.jpeg",[[NSProcessInfo processInfo] globallyUniqueString]]];
+        }
+
         NSFileManager *fileManager = [NSFileManager defaultManager];
-        NSString *fullPath = [tempDirectory stringByAppendingPathComponent: [NSString stringWithFormat:@"thumb-%@.jpeg",[[NSProcessInfo processInfo] globallyUniqueString]]];
         [fileManager createFileAtPath:fullPath contents:data attributes:nil];
         CGImageRelease(imgRef);
         resolve(@{

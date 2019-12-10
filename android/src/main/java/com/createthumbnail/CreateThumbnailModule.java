@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
+import android.os.Build.VERSION;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Video.Thumbnails;
@@ -39,15 +40,26 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void create(ReadableMap options, Promise promise) {
-        String filePath = options.getString("url");
-        int timeStamp = options.hasKey("timeStamp") ? options.getInt("timeStamp") : 0;
-        filePath = filePath.replace("file://", "");
+        String filePath = options.hasKey("type") ? options.getString("url") : "";
+        String type = options.hasKey("type") ? options.getString("type") : "remote";
+        String format = options.hasKey("format") ? options.getString("format") : "jpeg";
+        int timeStamp = options.hasKey("timeStamp") ? options.getInt("timeStamp") : 1;
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         String fullPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/thumb";
-        String fileName = "thumb-" + UUID.randomUUID().toString() + ".jpeg";
+        String fileName = "thumb-" + UUID.randomUUID().toString() + "." + format;
+        OutputStream fOut = null;
 
         try {
-            retriever.setDataSource(filePath, new HashMap<String, String>());
+            if (type.equals("local")) {
+                if (VERSION.SDK_INT < 14) {
+                    throw new IllegalStateException("remote videos aren't supported on sdk_version < 14");
+                }
+                filePath = filePath.replace("file://", "");
+                retriever.setDataSource(filePath);
+            } else {
+                retriever.setDataSource(filePath, new HashMap<String, String>());
+            }
+
             Bitmap image = retriever.getFrameAtTime(timeStamp * 1000000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
             retriever.release();
 
@@ -56,13 +68,17 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
                 dir.mkdirs();
             }
 
-            OutputStream fOut = null;
             File file = new File(fullPath, fileName);
             file.createNewFile();
             fOut = new FileOutputStream(file);
 
             // 100 means no compression, the lower you go, the stronger the compression
-            image.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+            if (format == "png") {
+                image.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+            } else {
+                image.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+            }
+
             fOut.flush();
             fOut.close();
 

@@ -40,7 +40,7 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void create(ReadableMap options, Promise promise) {
-        String filePath = options.hasKey("type") ? options.getString("url") : "";
+        String filePath = options.hasKey("url") ? options.getString("url") : "";
         String type = options.hasKey("type") ? options.getString("type") : "remote";
         String format = options.hasKey("format") ? options.getString("format") : "jpeg";
         int timeStamp = options.hasKey("timeStamp") ? options.getInt("timeStamp") : 1;
@@ -51,12 +51,12 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
 
         try {
             if (type.equals("local")) {
-                if (VERSION.SDK_INT < 14) {
-                    throw new IllegalStateException("remote videos aren't supported on sdk_version < 14");
-                }
                 filePath = filePath.replace("file://", "");
                 retriever.setDataSource(filePath);
             } else {
+                if (VERSION.SDK_INT < 14) {
+                    throw new IllegalStateException("remote videos aren't supported on sdk_version < 14");
+                }
                 retriever.setDataSource(filePath, new HashMap<String, String>());
             }
 

@@ -10,6 +10,7 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
     int timeStamp = [[config objectForKey:@"timeStamp"] intValue] ?: 1;
     NSString *type = (NSString *)[config objectForKey:@"type"] ?: @"remote";
     NSString *format = (NSString *)[config objectForKey:@"format"] ?: @"jpeg";
+    unsigned long long CTMaxDirSize = 104857600; // 100mb
     
     @try {
         NSURL *vidURL = nil;
@@ -30,9 +31,18 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
         
         CGImageRef imgRef = [generator copyCGImageAtTime:time actualTime:NULL error:&err];
         UIImage *thumbnail = [UIImage imageWithCGImage:imgRef];
-        // save to temp directory
+        // Save to temp directory
         NSString* tempDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+        tempDirectory = [tempDirectory stringByAppendingString:@"/thumbnails/"];
+        // Create thumbnail directory if not exists
+        [[NSFileManager defaultManager] createDirectoryAtPath:tempDirectory withIntermediateDirectories:YES attributes:nil error:&err];
+        // Clean directory
+        unsigned long long size = [self sizeOfFolderAtPath:tempDirectory];
+        if (size >= CTMaxDirSize) {
+            [self cleanDir:tempDirectory forSpace:CTMaxDirSize / 2];
+        }
         
+        // Generate thumbnail
         NSData *data = nil;
         NSString *fullPath = nil;
         if ([format isEqual: @"png"]) {
@@ -54,6 +64,34 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
     } @catch(NSException *e) {
         reject(e.reason, nil, nil);
     }
+}
+
+- (unsigned long long) sizeOfFolderAtPath:(NSString *)path {
+    NSArray *files = [[NSFileManager defaultManager] subpathsOfDirectoryAtPath:path error:nil];
+    NSEnumerator *enumerator = [files objectEnumerator];
+    NSString *fileName;
+    unsigned long long size = 0;
+    while (fileName = [enumerator nextObject]) {
+        size += [[[NSFileManager defaultManager] attributesOfItemAtPath:[path stringByAppendingPathComponent:fileName] error:nil] fileSize];
+    }
+    return size;
+}
+
+- (void) cleanDir:(NSString *)path forSpace:(unsigned long long)size {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSError *error = nil;
+    unsigned long long deletedSize = 0;
+    for (NSString *file in [fm contentsOfDirectoryAtPath:path error:&error]) {
+        unsigned long long fileSize = [[[NSFileManager defaultManager] attributesOfItemAtPath:[path stringByAppendingPathComponent:file] error:nil] fileSize];
+        BOOL success = [fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", path, file] error:&error];
+        if (success) {
+            deletedSize += fileSize;
+        }
+        if (deletedSize >= size) {
+            break;
+        }
+    }
+    return;
 }
 
 @end

@@ -25,7 +25,7 @@ import org.apache.commons.io.comparator.LastModifiedFileComparator;
 public class CreateThumbnailModule extends ReactContextBaseJavaModule {
 
     private final ReactApplicationContext reactContext;
-    private static final long CACHE_DIR_MAX_SIZE = 52428800L; // 50MB
+    private static final long CACHE_DIR_MAX_SIZE = 104857600L; // 100MB
 
     public CreateThumbnailModule(ReactApplicationContext reactContext) {
         super(reactContext);

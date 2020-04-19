@@ -1,4 +1,4 @@
-package com.reactlibrary;
+package com.reactlibrary.createthumbnail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,7 +25,6 @@ import org.apache.commons.io.comparator.LastModifiedFileComparator;
 public class CreateThumbnailModule extends ReactContextBaseJavaModule {
 
     private final ReactApplicationContext reactContext;
-    private static final long CACHE_DIR_MAX_SIZE = 104857600L; // 100MB
 
     public CreateThumbnailModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -42,10 +41,12 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
         String filePath = options.hasKey("url") ? options.getString("url") : "";
         String type = options.hasKey("type") ? options.getString("type") : "remote";
         String format = options.hasKey("format") ? options.getString("format") : "jpeg";
-        int timeStamp = options.hasKey("timeStamp") ? options.getInt("timeStamp") : 1;
+        int timeStamp = options.hasKey("timeStamp") ? options.getInt("timeStamp") : 0;
+        int dirSize = options.hasKey("dirSize") ? options.getInt("dirSize") : 100;
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         String thumbnailDir = reactContext.getApplicationContext().getCacheDir().getAbsolutePath() + "/thumbnails";
         String fileName = "thumb-" + UUID.randomUUID().toString() + "." + format;
+        long cacheDirSize = dirSize * 1024 * 1024;
         OutputStream fOut = null;
 
         try {
@@ -54,17 +55,20 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
                 retriever.setDataSource(filePath);
             } else {
                 if (VERSION.SDK_INT < 14) {
-                    throw new IllegalStateException("remote videos aren't supported on sdk_version < 14");
+                    throw new IllegalStateException("Remote videos aren't supported on sdk_version < 14");
                 }
                 retriever.setDataSource(filePath, new HashMap<String, String>());
             }
 
-            Bitmap image = retriever.getFrameAtTime(timeStamp * 1000000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            Bitmap image = retriever.getFrameAtTime(timeStamp * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
             retriever.release();
 
             File dir = new File(thumbnailDir);
             if (!dir.exists()) {
                 dir.mkdirs();
+                // Add .nomedia to hide the thumbnail directory from gallery
+                File noMedia = new File(thumbnailDir, ".nomedia");
+                file.createNewFile();
             }
 
             File file = new File(thumbnailDir, fileName);
@@ -84,8 +88,8 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
 
             long newSize = image.getByteCount() + getDirSize(dir);
             // free up some cached data if size of cache dir exceeds CACHE_DIR_MAX_SIZE
-            if (newSize > CACHE_DIR_MAX_SIZE) {
-                cleanDir(dir, CACHE_DIR_MAX_SIZE / 2);
+            if (newSize > cacheDirSize) {
+                cleanDir(dir, cacheDirSize / 2);
             }
 
             WritableMap map = Arguments.createMap();

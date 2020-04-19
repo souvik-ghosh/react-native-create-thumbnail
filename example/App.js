@@ -10,9 +10,8 @@ export default class App extends Component {
 
   componentDidMount() {
     createThumbnail({
-      url:
-        "https://uc8d882487c3bc5496dba3acd6ea.dl.dropboxusercontent.com/cd/0/get/At30lKs23Exff289oyuORmbjN1WgY0gVvQplB1PUw3Z9AMej2kWdCAR3MAq0BJ8krvYVhp0PjEEh0abLvi3qjUnZW8PxyM-Y7KiA9WaihEeVT7TPCZ400ZbNBofzyaL46T8/file?dl=1",
-      timeStamp: 10
+      url: 'https://www.example.com/video-file.mp4',
+      timeStamp: 10000
     })
       .then(response => {
         console.log({ response });

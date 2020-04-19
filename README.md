@@ -39,17 +39,11 @@ iOS/Android thumbnail generator with support for both local and remote videos. `
 import { createThumbnail } from "react-native-create-thumbnail";
 
 createThumbnail({
-  url: "<path to video file>",
-  type: "local"
-  timeStamp: 5
+  url: '<path to video file>',
+  timeStamp: 10000,
+  type: 'local'
 })
-  .then(response => {
-    console.log({ response });
-    this.setState({
-      status: "Thumbnail received",
-      thumbnail: response.path
-    });
-  })
+  .then(response => console.log({ response }));
   .catch(err => console.log({ err }));
 ```
 
@@ -58,9 +52,10 @@ createThumbnail({
 | Property  |            Type             | Description                                        |
 | --------- | :-------------------------: | :------------------------------------------------- |
 | url       |     `String` (required)     | Path to video file (local or remote)               |
-| timeStamp |   `Number` (default `1`)    | Thumbnail timestamp (in seconds)                   |
+| timeStamp |   `Number` (default `0`)    | Thumbnail timestamp (in milliseconds)              |
 | type      | `String` (default `remote`) | Resource type, can be one of: `remote`, or `local` |
 | format    |  `String` (default `jpeg`)  | Thumbnail format, can be one of: `jpeg`, or `png`  |
+| dirSize   |  `Number` (default `100`)   | Maximum size of the cache directory (in megabytes) |
 
 ## Response Object
 
@@ -80,7 +75,8 @@ READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 
 #### Limitations
 
-Remote videos aren't supported on android sdk_version < 14
+- Remote videos aren't supported on android sdk_version < 14.
+- This is a **Native Module**, so it won't work in expo managed projects.
 
 #### Credits
 

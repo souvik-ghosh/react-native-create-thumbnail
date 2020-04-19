@@ -7,11 +7,12 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     NSString *url = (NSString *)[config objectForKey:@"url"] ?: @"";
-    int timeStamp = [[config objectForKey:@"timeStamp"] intValue] ?: 1;
+    int timeStamp = [[config objectForKey:@"timeStamp"] intValue] ?: 0;
     NSString *type = (NSString *)[config objectForKey:@"type"] ?: @"remote";
     NSString *format = (NSString *)[config objectForKey:@"format"] ?: @"jpeg";
-    unsigned long long CTMaxDirSize = 104857600; // 100mb
-    
+    int dirSize = [[config objectForKey:@"dirSize"] intValue] ?: 100;
+    unsigned long long cacheDirSize = dirSize * 1024 * 1024;
+
     @try {
         NSURL *vidURL = nil;
         if ([type isEqual: @"local"]) {
@@ -22,24 +23,17 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
             vidURL = [NSURL URLWithString:url];
         }
 
-        AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:vidURL options:nil];
-        AVAssetImageGenerator *generator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
-        generator.appliesPreferredTrackTransform = YES;
-        
-        NSError *err = NULL;
-        CMTime time = CMTimeMake(timeStamp, 1);
-        
-        CGImageRef imgRef = [generator copyCGImageAtTime:time actualTime:NULL error:&err];
-        UIImage *thumbnail = [UIImage imageWithCGImage:imgRef];
+        UIImage *thumbnail = [self generateThumbImage:vidURL atTime:timeStamp];
+
         // Save to temp directory
         NSString* tempDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
         tempDirectory = [tempDirectory stringByAppendingString:@"/thumbnails/"];
         // Create thumbnail directory if not exists
-        [[NSFileManager defaultManager] createDirectoryAtPath:tempDirectory withIntermediateDirectories:YES attributes:nil error:&err];
+        [[NSFileManager defaultManager] createDirectoryAtPath:tempDirectory withIntermediateDirectories:YES attributes:nil error:nil];
         // Clean directory
         unsigned long long size = [self sizeOfFolderAtPath:tempDirectory];
-        if (size >= CTMaxDirSize) {
-            [self cleanDir:tempDirectory forSpace:CTMaxDirSize / 2];
+        if (size >= cacheDirSize) {
+            [self cleanDir:tempDirectory forSpace:cacheDirSize / 2];
         }
         
         // Generate thumbnail
@@ -53,16 +47,23 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
             fullPath = [tempDirectory stringByAppendingPathComponent: [NSString stringWithFormat:@"thumb-%@.jpeg",[[NSProcessInfo processInfo] globallyUniqueString]]];
         }
 
+        if (data == nil) {
+            NSException *e = [NSException
+                exceptionWithName:@"FileNotSupportedException"
+                reason:@"File doesn't exist or not supported"
+                userInfo:nil];
+            @throw e;
+        }
+
         NSFileManager *fileManager = [NSFileManager defaultManager];
         [fileManager createFileAtPath:fullPath contents:data attributes:nil];
-        CGImageRelease(imgRef);
         resolve(@{
             @"path"     : fullPath,
             @"width"    : [NSNumber numberWithFloat: thumbnail.size.width],
             @"height"   : [NSNumber numberWithFloat: thumbnail.size.height]
         });
     } @catch(NSException *e) {
-        reject(e.reason, nil, nil);
+        reject(e.name, e.reason, nil);
     }
 }
 
@@ -92,6 +93,21 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
         }
     }
     return;
+}
+
+- (UIImage *) generateThumbImage: (NSURL *)url atTime:(int)timeStamp {
+    AVAsset * asset = [AVAsset assetWithURL:url];
+    AVAssetImageGenerator * generator = [
+      [AVAssetImageGenerator alloc] initWithAsset:asset
+    ];
+    generator.appliesPreferredTrackTransform = YES;
+    CMTime time = [asset duration];
+    time.value = time.timescale * timeStamp / 1000;
+    CMTime actTime = CMTimeMake(0, 0);
+    CGImageRef imageRef = [generator copyCGImageAtTime:time actualTime:&actTime error:nil];
+    UIImage *thumbnail = [UIImage imageWithCGImage:imageRef];
+    CGImageRelease(imageRef);
+    return thumbnail;
 }
 
 @end

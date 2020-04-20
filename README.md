@@ -3,7 +3,7 @@
 iOS/Android thumbnail generator with support for both local and remote videos. `react-native-create-thumbnail` is a wrapper around
 [`AVAssetImageGenerator`](https://developer.apple.com/documentation/avfoundation/avassetimagegenerator?language=objc) (iOS) and [`MediaMetadataRetriever`](https://developer.android.com/reference/android/media/MediaMetadataRetriever) (Android)
 
-[![npm](https://img.shields.io/npm/v/react-native-create-thumbnail.svg)](https://npmjs.com/package/react-native-create-thumbnail) [![npm](https://img.shields.io/npm/dm/react-native-create-thumbnail.svg)](https://npmjs.com/package/react-native-create-thumbnail) [![License](https://img.shields.io/npm/l/react-native-create-thumbnail.svg)](https://www.npmjs.com/package/react-native-create-thumbnail)
+[![npm version](https://img.shields.io/npm/v/react-native-create-thumbnail.svg)](https://npmjs.com/package/react-native-create-thumbnail) [![npm downloads](https://img.shields.io/npm/dm/react-native-create-thumbnail.svg)](https://npmjs.com/package/react-native-create-thumbnail) [![Maintenance Status](https://img.shields.io/badge/maintenance-active-green.svg)](#maintenance-status)
 
 ## Getting started
 

@@ -63,12 +63,16 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
             Bitmap image = retriever.getFrameAtTime(timeStamp * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
             retriever.release();
 
+            if (image == null) {
+                throw new IllegalStateException("File doesn't exist or not supported");
+            }
+
             File dir = new File(thumbnailDir);
             if (!dir.exists()) {
                 dir.mkdirs();
                 // Add .nomedia to hide the thumbnail directory from gallery
                 File noMedia = new File(thumbnailDir, ".nomedia");
-                file.createNewFile();
+                noMedia.createNewFile();
             }
 
             File file = new File(thumbnailDir, fileName);

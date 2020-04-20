@@ -25,6 +25,14 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
 
         UIImage *thumbnail = [self generateThumbImage:vidURL atTime:timeStamp];
 
+        if (thumbnail == nil) {
+            NSException *e = [NSException
+                exceptionWithName:@"FileNotSupportedException"
+                reason:@"File doesn't exist or not supported"
+                userInfo:nil];
+            @throw e;
+        }
+
         // Save to temp directory
         NSString* tempDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
         tempDirectory = [tempDirectory stringByAppendingString:@"/thumbnails/"];
@@ -45,14 +53,6 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
         } else {
             data = UIImageJPEGRepresentation(thumbnail, 1.0);
             fullPath = [tempDirectory stringByAppendingPathComponent: [NSString stringWithFormat:@"thumb-%@.jpeg",[[NSProcessInfo processInfo] globallyUniqueString]]];
-        }
-
-        if (data == nil) {
-            NSException *e = [NSException
-                exceptionWithName:@"FileNotSupportedException"
-                reason:@"File doesn't exist or not supported"
-                userInfo:nil];
-            @throw e;
         }
 
         NSFileManager *fileManager = [NSFileManager defaultManager];

@@ -4,6 +4,7 @@ declare module "react-native-create-thumbnail" {
     timeStamp?: number;
     type?: "local" | "remote";
     format?: "jpeg" | "png";
+    dirSize?: number
   }
 
   export interface Thumbnail {

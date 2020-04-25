@@ -15,8 +15,8 @@ Steps to reproduce the behavior:
 1.
 2.
 
-**Create Thumbnail version**
-Run `react-native info` in your terminal and copy the results here.
+**Version**
+`react-native-create-thumbnail` version
 
 **Expected Results**
 Describe what you expected to happen.

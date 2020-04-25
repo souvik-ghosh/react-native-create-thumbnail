@@ -8,30 +8,16 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
 {
     NSString *url = (NSString *)[config objectForKey:@"url"] ?: @"";
     int timeStamp = [[config objectForKey:@"timeStamp"] intValue] ?: 0;
-    NSString *type = (NSString *)[config objectForKey:@"type"] ?: @"remote";
     NSString *format = (NSString *)[config objectForKey:@"format"] ?: @"jpeg";
     int dirSize = [[config objectForKey:@"dirSize"] intValue] ?: 100;
+    NSDictionary *headers = config[@"headers"] ?: @{};
+
     unsigned long long cacheDirSize = dirSize * 1024 * 1024;
 
     @try {
-        NSURL *vidURL = nil;
-        if ([type isEqual: @"local"]) {
-            url = [url stringByReplacingOccurrencesOfString:@"file://"
-                                                  withString:@""];
-            vidURL = [NSURL fileURLWithPath:url];
-        } else {
-            vidURL = [NSURL URLWithString:url];
-        }
-
-        UIImage *thumbnail = [self generateThumbImage:vidURL atTime:timeStamp];
-
-        if (thumbnail == nil) {
-            NSException *e = [NSException
-                exceptionWithName:@"FileNotSupportedException"
-                reason:@"File doesn't exist or not supported"
-                userInfo:nil];
-            @throw e;
-        }
+        NSURL *vidURL = [NSURL URLWithString:url];
+        AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:vidURL options:@{@"AVURLAssetHTTPHeaderFieldsKey": headers}];
+        UIImage *thumbnail = [self generateThumbImage:asset atTime:timeStamp];
 
         // Save to temp directory
         NSString* tempDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
@@ -95,16 +81,23 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
     return;
 }
 
-- (UIImage *) generateThumbImage: (NSURL *)url atTime:(int)timeStamp {
-    AVAsset * asset = [AVAsset assetWithURL:url];
-    AVAssetImageGenerator * generator = [
+- (UIImage *) generateThumbImage: (AVURLAsset *)asset atTime:(int)timeStamp {
+    AVAssetImageGenerator *generator = [
       [AVAssetImageGenerator alloc] initWithAsset:asset
     ];
     generator.appliesPreferredTrackTransform = YES;
     CMTime time = [asset duration];
     time.value = time.timescale * timeStamp / 1000;
     CMTime actTime = CMTimeMake(0, 0);
-    CGImageRef imageRef = [generator copyCGImageAtTime:time actualTime:&actTime error:nil];
+    NSError *err = NULL;
+    CGImageRef imageRef = [generator copyCGImageAtTime:time actualTime:&actTime error:&err];
+    if (err) {
+        NSException *e = [NSException
+            exceptionWithName:@"FileNotSupportedException"
+            reason:@"File doesn't exist or not supported"
+            userInfo:nil];
+        @throw e;
+    }
     UIImage *thumbnail = [UIImage imageWithCGImage:imageRef];
     CGImageRelease(imageRef);
     return thumbnail;

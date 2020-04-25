@@ -5,7 +5,10 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Arrays;
+import android.webkit.URLUtil;
+import android.net.Uri;
 
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
@@ -39,10 +42,10 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void create(ReadableMap options, Promise promise) {
         String filePath = options.hasKey("url") ? options.getString("url") : "";
-        String type = options.hasKey("type") ? options.getString("type") : "remote";
         String format = options.hasKey("format") ? options.getString("format") : "jpeg";
         int timeStamp = options.hasKey("timeStamp") ? options.getInt("timeStamp") : 0;
         int dirSize = options.hasKey("dirSize") ? options.getInt("dirSize") : 100;
+        HashMap headers = options.hasKey("headers") ? options.getMap("headers").toHashMap() : new HashMap<String, String>();
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         String thumbnailDir = reactContext.getApplicationContext().getCacheDir().getAbsolutePath() + "/thumbnails";
         String fileName = "thumb-" + UUID.randomUUID().toString() + "." + format;
@@ -50,31 +53,8 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
         OutputStream fOut = null;
 
         try {
-            if (type.equals("local")) {
-                filePath = filePath.replace("file://", "");
-                retriever.setDataSource(filePath);
-            } else {
-                if (VERSION.SDK_INT < 14) {
-                    throw new IllegalStateException("Remote videos aren't supported on sdk_version < 14");
-                }
-                retriever.setDataSource(filePath, new HashMap<String, String>());
-            }
-
-            Bitmap image = retriever.getFrameAtTime(timeStamp * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
-            retriever.release();
-
-            if (image == null) {
-                throw new IllegalStateException("File doesn't exist or not supported");
-            }
-
-            File dir = new File(thumbnailDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
-                // Add .nomedia to hide the thumbnail directory from gallery
-                File noMedia = new File(thumbnailDir, ".nomedia");
-                noMedia.createNewFile();
-            }
-
+            createDirIfNotExists(thumbnailDir);
+            Bitmap image = getBitmapAtTime(filePath, timeStamp, headers);
             File file = new File(thumbnailDir, fileName);
             file.createNewFile();
 
@@ -121,6 +101,35 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
                 break;
             }
         }
+    }
+
+    private static void createDirIfNotExists(String path) {
+        File dir = new File(path);
+        if (!dir.exists()) {
+            dir.mkdirs();
+            // Add .nomedia to hide the thumbnail directory from gallery
+            File noMedia = new File(thumbnailDir, ".nomedia");
+            noMedia.createNewFile();
+        }
+    }
+
+    private static Bitmap getBitmapAtTime(String filePath, int time, Map headers) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        if (URLUtil.isFileUrl(filePath)) {
+            retriever.setDataSource(Uri.decode(filePath).replace("file://", ""));
+        } else {
+            if (VERSION.SDK_INT < 14) {
+                throw new IllegalStateException("Remote videos aren't supported on sdk_version < 14");
+            }
+            retriever.setDataSource(filePath, headers);
+        }
+  
+        Bitmap image = retriever.getFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+        retriever.release();
+        if (image == null) {
+            throw new IllegalStateException("File doesn't exist or not supported");
+        }
+        return image;
     }
 
     private static long getDirSize(File dir) {

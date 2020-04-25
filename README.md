@@ -10,13 +10,13 @@ iOS/Android thumbnail generator with support for both local and remote videos. `
 1. Install library from `npm`
 
    ```bash
-   yarn add react-native-create-thumbnail
+   npm i react-native-create-thumbnail
    ```
 
    or
 
    ```bash
-   npm i react-native-create-thumbnail
+   yarn add react-native-create-thumbnail
    ```
 
 2. Link native code
@@ -41,7 +41,6 @@ import { createThumbnail } from "react-native-create-thumbnail";
 createThumbnail({
   url: '<path to video file>',
   timeStamp: 10000,
-  type: 'local'
 })
   .then(response => console.log({ response }));
   .catch(err => console.log({ err }));
@@ -49,13 +48,13 @@ createThumbnail({
 
 ## Request Object
 
-| Property  |            Type             | Description                                        |
-| --------- | :-------------------------: | :------------------------------------------------- |
-| url       |     `String` (required)     | Path to video file (local or remote)               |
-| timeStamp |   `Number` (default `0`)    | Thumbnail timestamp (in milliseconds)              |
-| type      | `String` (default `remote`) | Resource type, can be one of: `remote`, or `local` |
-| format    |  `String` (default `jpeg`)  | Thumbnail format, can be one of: `jpeg`, or `png`  |
-| dirSize   |  `Number` (default `100`)   | Maximum size of the cache directory (in megabytes) |
+| Property  |           Type            | Description                                                             |
+| --------- | :-----------------------: | :---------------------------------------------------------------------- |
+| url       |    `String` (required)    | Path to video file (local or remote)                                    |
+| timeStamp |  `Number` (default `0`)   | Thumbnail timestamp (in milliseconds)                                   |
+| format    | `String` (default `jpeg`) | Thumbnail format, can be one of: `jpeg`, or `png`                       |
+| dirSize   | `Number` (default `100`)  | Maximum size of the cache directory (in megabytes)                      |
+| headers   |         `Object`          | Headers to load the video with. e.g. { Authorization: 'someAuthToken' } |
 
 ## Response Object
 

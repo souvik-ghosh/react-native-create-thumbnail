@@ -2,6 +2,7 @@ package com.reactlibrary.createthumbnail;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 import java.util.HashMap;
@@ -53,11 +54,10 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
         OutputStream fOut = null;
 
         try {
-            createDirIfNotExists(thumbnailDir);
+            File dir = createDirIfNotExists(thumbnailDir);
             Bitmap image = getBitmapAtTime(filePath, timeStamp, headers);
             File file = new File(thumbnailDir, fileName);
             file.createNewFile();
-
             fOut = new FileOutputStream(file);
 
             // 100 means no compression, the lower you go, the stronger the compression
@@ -103,14 +103,22 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
         }
     }
 
-    private static void createDirIfNotExists(String path) {
+    private static File createDirIfNotExists(String path) {
         File dir = new File(path);
-        if (!dir.exists()) {
+        if (dir.exists()) {
+            return dir;
+        }
+
+        try {
             dir.mkdirs();
             // Add .nomedia to hide the thumbnail directory from gallery
-            File noMedia = new File(thumbnailDir, ".nomedia");
+            File noMedia = new File(path, ".nomedia");
             noMedia.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+        return dir;
     }
 
     private static Bitmap getBitmapAtTime(String filePath, int time, Map headers) {

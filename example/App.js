@@ -1,40 +1,52 @@
-import React, { Component } from "react";
-import { Image, Text, View, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { Image, Text, View, StyleSheet, TextInput, Button } from "react-native";
 import { createThumbnail } from "react-native-create-thumbnail";
 
-export default class App extends Component {
-  state = {
-    status: "starting",
-    thumbnail: null
-  };
+export default function App() {
+  const [path, setPath] = useState('');
+  const [thumbnail, setThumbnail] = useState('');
+  const [timeStamp, setTimeStamp] = useState('');
 
-  componentDidMount() {
+  const generate = () => {
+    if (!path) {
+      return;
+    }
+
     createThumbnail({
-      url: 'https://www.example.com/video-file.mp4',
-      timeStamp: 10000
+      url: path,
+      timeStamp
     })
       .then(response => {
-        console.log({ response });
-        this.setState({
-          status: "Thumbnail received",
-          thumbnail: response.path
-        });
+        setThumbnail(response.path);
       })
       .catch(err => console.log({ err }));
-  }
+  };
 
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>☆CreateThumbnail example☆</Text>
-        <Text style={styles.instructions}>STATUS: {this.state.status}</Text>
-        <Text style={styles.welcome}>☆THUMBNAIL☆</Text>
-        {this.state.thumbnail && (
-          <Image style={styles.image} source={{ uri: this.state.thumbnail }} />
-        )}
-      </View>
-    );
-  }
+  return (
+    <View style={styles.container}>
+      <Text style={styles.welcome}>☆CreateThumbnail example☆</Text>
+      <TextInput
+        value={path}
+        onChangeText={setPath}
+        style={styles.pathInput}
+        placeholder="Paste video url"
+      />
+      <TextInput
+        value={timeStamp}
+        onChangeText={setTimeStamp}
+        style={styles.timeInput}
+        placeholder="Timestamp"
+      />
+      <Button
+        title="Generate Thumbnail"
+        onPress={generate}
+      />
+      <Text style={styles.welcome}>☆THUMBNAIL☆</Text>
+      {!!thumbnail && (
+        <Image style={styles.image} source={{ uri: thumbnail }} />
+      )}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -54,5 +66,22 @@ const styles = StyleSheet.create({
     color: "#333333",
     marginBottom: 5
   },
-  image: { height: 150, width: 250, backgroundColor: "lightgrey" }
+  image: {
+    height: 150,
+    width: 250,
+    backgroundColor: "lightgrey"
+  },
+  pathInput: {
+    height: 35,
+    backgroundColor: '#eaeaea',
+    width: '80%',
+    paddingHorizontal: 10
+  },
+  timeInput: {
+    height: 35,
+    backgroundColor: '#eaeaea',
+    width: '40%',
+    paddingHorizontal: 10,
+    marginTop: 10
+  }
 });

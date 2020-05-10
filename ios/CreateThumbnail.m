@@ -15,7 +15,15 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
     unsigned long long cacheDirSize = dirSize * 1024 * 1024;
 
     @try {
-        NSURL *vidURL = [NSURL URLWithString:url];
+        NSURL *vidURL = nil;
+        url = [url lowercaseString];
+        if ([url hasPrefix:@"http://"] || [url hasPrefix:@"https://"] || [url hasPrefix:@"file://"]) {
+            vidURL = [NSURL URLWithString:url];
+        } else {
+            // Consider it's file url path 
+            vidURL = [NSURL fileURLWithPath:url];
+        }
+
         AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:vidURL options:@{@"AVURLAssetHTTPHeaderFieldsKey": headers}];
         UIImage *thumbnail = [self generateThumbImage:asset atTime:timeStamp];
 

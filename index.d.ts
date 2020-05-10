@@ -2,9 +2,9 @@ declare module "react-native-create-thumbnail" {
   export interface Config {
     url: string;
     timeStamp?: number;
-    type?: "local" | "remote";
     format?: "jpeg" | "png";
-    dirSize?: number
+    dirSize?: number;
+    headers?: object;
   }
 
   export interface Thumbnail {

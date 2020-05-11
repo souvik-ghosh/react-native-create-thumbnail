@@ -1,7 +1,7 @@
 {
   "name": "react-native-create-thumbnail",
   "title": "React Native Create Thumbnail",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "iOS/Android thumbnail generator with support for both local and remote videos",
   "main": "index.js",
   "scripts": {

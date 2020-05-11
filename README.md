@@ -50,7 +50,7 @@ createThumbnail({
 
 | Property  |           Type            | Description                                                               |
 | --------- | :-----------------------: | :------------------------------------------------------------------------ |
-| url       |    `String` (required)    | Path to video file (`local` or `remote`)                                  |
+| url       |    `String` (required)    | Path to video file (local or remote)                                      |
 | timeStamp |  `Number` (default `0`)   | Thumbnail timestamp (in milliseconds)                                     |
 | format    | `String` (default `jpeg`) | Thumbnail format, can be one of: `jpeg`, or `png`                         |
 | dirSize   | `Number` (default `100`)  | Maximum size of the cache directory (in megabytes)                        |

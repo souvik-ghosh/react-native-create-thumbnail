@@ -42,7 +42,7 @@ createThumbnail({
   url: '<path to video file>',
   timeStamp: 10000,
 })
-  .then(response => console.log({ response }));
+  .then(response => console.log({ response }))
   .catch(err => console.log({ err }));
 ```
 

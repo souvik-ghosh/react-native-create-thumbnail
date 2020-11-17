@@ -1,20 +1,10 @@
 package com.reactlibrary.createthumbnail;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.UUID;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Arrays;
-import android.webkit.URLUtil;
-import android.net.Uri;
-
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Build.VERSION;
-import android.os.Environment;
+import android.webkit.URLUtil;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -25,6 +15,15 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class CreateThumbnailModule extends ReactContextBaseJavaModule {
 

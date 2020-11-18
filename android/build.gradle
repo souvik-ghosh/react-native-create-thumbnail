@@ -73,7 +73,7 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'  // From node_modules
-    implementation 'commons-io:commons-io:+'
+    implementation 'commons-io:commons-io:2.8.0'
 }
 
 def configureReactNativePom(def pom) {

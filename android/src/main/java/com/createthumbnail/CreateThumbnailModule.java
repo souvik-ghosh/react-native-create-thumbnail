@@ -1,9 +1,11 @@
 package com.reactlibrary.createthumbnail;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build.VERSION;
+import android.text.TextUtils;
 import android.webkit.URLUtil;
 
 import com.facebook.react.bridge.Arguments;
@@ -43,19 +45,29 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
     public void create(ReadableMap options, Promise promise) {
         String filePath = options.hasKey("url") ? options.getString("url") : "";
         String format = options.hasKey("format") ? options.getString("format") : "jpeg";
+        String cacheName = options.hasKey("cacheName") ? options.getString("cacheName") : "";
         int timeStamp = options.hasKey("timeStamp") ? options.getInt("timeStamp") : 0;
         int dirSize = options.hasKey("dirSize") ? options.getInt("dirSize") : 100;
         HashMap headers = options.hasKey("headers") ? options.getMap("headers").toHashMap() : new HashMap<String, String>();
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         String thumbnailDir = reactContext.getApplicationContext().getCacheDir().getAbsolutePath() + "/thumbnails";
-        String fileName = "thumb-" + UUID.randomUUID().toString() + "." + format;
+        String fileName = TextUtils.isEmpty(cacheName) ? ("thumb-" + UUID.randomUUID().toString()) : cacheName + "." + format;
+        File dir = createDirIfNotExists(thumbnailDir);
+        File file = new File(thumbnailDir, fileName);
+        if (file.exists()) {
+            WritableMap map = Arguments.createMap();
+            map.putString("path", "file://" + thumbnailDir + '/' + fileName);
+            Bitmap image = BitmapFactory.decodeFile(file.getAbsolutePath());
+            map.putDouble("width", image.getWidth());
+            map.putDouble("height", image.getHeight());
+
+            promise.resolve(map);
+            return;
+        }
         long cacheDirSize = dirSize * 1024 * 1024;
         OutputStream fOut = null;
-
         try {
-            File dir = createDirIfNotExists(thumbnailDir);
             Bitmap image = getBitmapAtTime(filePath, timeStamp, headers);
-            File file = new File(thumbnailDir, fileName);
             file.createNewFile();
             fOut = new FileOutputStream(file);
 

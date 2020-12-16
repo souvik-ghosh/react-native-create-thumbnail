@@ -5,6 +5,7 @@ declare module "react-native-create-thumbnail" {
     format?: "jpeg" | "png";
     dirSize?: number;
     headers?: object;
+    cacheName?: string;
   }
 
   export interface Thumbnail {

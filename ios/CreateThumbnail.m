@@ -6,9 +6,11 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
+    NSString* tempDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
     NSString *url = (NSString *)[config objectForKey:@"url"] ?: @"";
     int timeStamp = [[config objectForKey:@"timeStamp"] intValue] ?: 0;
     NSString *format = (NSString *)[config objectForKey:@"format"] ?: @"jpeg";
+    NSString *tempDirectory = (NSString *)[config objectForKey:@"tempDir"] ?:tempDir;
     int dirSize = [[config objectForKey:@"dirSize"] intValue] ?: 100;
     NSDictionary *headers = config[@"headers"] ?: @{};
 
@@ -29,7 +31,6 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
         UIImage *thumbnail = [self generateThumbImage:asset atTime:timeStamp];
 
         // Save to temp directory
-        NSString* tempDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
         tempDirectory = [tempDirectory stringByAppendingString:@"/thumbnails/"];
         // Create thumbnail directory if not exists
         [[NSFileManager defaultManager] createDirectoryAtPath:tempDirectory withIntermediateDirectories:YES attributes:nil error:nil];

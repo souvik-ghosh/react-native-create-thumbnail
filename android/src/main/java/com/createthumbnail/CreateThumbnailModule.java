@@ -47,7 +47,7 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
         int dirSize = options.hasKey("dirSize") ? options.getInt("dirSize") : 100;
         HashMap headers = options.hasKey("headers") ? options.getMap("headers").toHashMap() : new HashMap<String, String>();
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        String thumbnailDir = reactContext.getApplicationContext().getCacheDir().getAbsolutePath() + "/thumbnails";
+        String thumbnailDir = options.hasKey("tempDir") ? options.getString("tempDir") : reactContext.getApplicationContext().getCacheDir().getAbsolutePath() + "/thumbnails";
         String fileName = "thumb-" + UUID.randomUUID().toString() + "." + format;
         long cacheDirSize = dirSize * 1024 * 1024;
         OutputStream fOut = null;

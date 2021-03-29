@@ -61,6 +61,8 @@ createThumbnail({
 | Property |   Type   | Description                 |
 | -------- | :------: | :-------------------------- |
 | path     | `String` | Path to generated thumbnail |
+| size     | `Number` | Size (in bytes) of thumbnail|
+| mime     | `String` | Mimetype of thumbnail       |
 | width    | `Number` | Thumbnail width             |
 | height   | `Number` | Thumbnail height            |
 

@@ -9,6 +9,8 @@ declare module "react-native-create-thumbnail" {
 
   export interface Thumbnail {
     path: string;
+    size: number;
+    mime: string;
     width: number;
     height: number;
   }

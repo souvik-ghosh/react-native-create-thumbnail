@@ -77,6 +77,8 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
 
             WritableMap map = Arguments.createMap();
             map.putString("path", "file://" + thumbnailDir + '/' + fileName);
+            map.putDouble("size", image.getByteCount());
+            map.putString("mime", "image/" + format);
             map.putDouble("width", image.getWidth());
             map.putDouble("height", image.getHeight());
 

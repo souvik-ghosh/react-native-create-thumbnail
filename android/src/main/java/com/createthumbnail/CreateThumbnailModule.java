@@ -1,5 +1,6 @@
 package com.reactlibrary.createthumbnail;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
@@ -54,7 +55,7 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
 
         try {
             File dir = createDirIfNotExists(thumbnailDir);
-            Bitmap image = getBitmapAtTime(filePath, timeStamp, headers);
+            Bitmap image = getBitmapAtTime(this.reactContext, filePath, timeStamp, headers);
             File file = new File(thumbnailDir, fileName);
             file.createNewFile();
             fOut = new FileOutputStream(file);
@@ -77,8 +78,6 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
 
             WritableMap map = Arguments.createMap();
             map.putString("path", "file://" + thumbnailDir + '/' + fileName);
-            map.putDouble("size", image.getByteCount());
-            map.putString("mime", "image/" + format);
             map.putDouble("width", image.getWidth());
             map.putDouble("height", image.getHeight());
 
@@ -122,10 +121,12 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
         return dir;
     }
 
-    private static Bitmap getBitmapAtTime(String filePath, int time, Map headers) {
+    private static Bitmap getBitmapAtTime(Context context, String filePath, int time, Map headers) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         if (URLUtil.isFileUrl(filePath)) {
             retriever.setDataSource(Uri.decode(filePath).replace("file://", ""));
+        } else if (filePath.contains("content://")) {
+            retriever.setDataSource(context, Uri.parse(filePath));
         } else {
             if (VERSION.SDK_INT < 14) {
                 throw new IllegalStateException("Remote videos aren't supported on sdk_version < 14");

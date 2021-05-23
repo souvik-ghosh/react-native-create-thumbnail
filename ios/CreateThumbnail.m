@@ -10,11 +10,30 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
     int timeStamp = [[config objectForKey:@"timeStamp"] intValue] ?: 0;
     NSString *format = (NSString *)[config objectForKey:@"format"] ?: @"jpeg";
     int dirSize = [[config objectForKey:@"dirSize"] intValue] ?: 100;
+    NSString *cacheName = (NSString *)[config objectForKey:@"cacheName"];
     NSDictionary *headers = config[@"headers"] ?: @{};
 
     unsigned long long cacheDirSize = dirSize * 1024 * 1024;
 
     @try {
+        // Prepare cache folder
+        NSString* tempDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+        tempDirectory = [tempDirectory stringByAppendingString:@"/thumbnails/"];
+        // Create thumbnail directory if not exists
+        [[NSFileManager defaultManager] createDirectoryAtPath:tempDirectory withIntermediateDirectories:YES attributes:nil error:nil];
+        NSString *fileName = [NSString stringWithFormat:@"thumb-%@.%@", cacheName ?: [[NSProcessInfo processInfo] globallyUniqueString], format];
+        NSString* fullPath = [tempDirectory stringByAppendingPathComponent:fileName];
+        if ([[NSFileManager defaultManager] fileExistsAtPath:fullPath]) {
+            NSData *imageData = [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:fullPath]];
+            UIImage *thumbnail = [UIImage imageWithData:imageData];
+            resolve(@{
+                @"path"     : fullPath,
+                @"width"    : [NSNumber numberWithFloat: thumbnail.size.width],
+                @"height"   : [NSNumber numberWithFloat: thumbnail.size.height]
+            });
+            return;
+        }
+        
         NSURL *vidURL = nil;
         NSString *url_ = [url lowercaseString];
 
@@ -28,11 +47,7 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
         AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:vidURL options:@{@"AVURLAssetHTTPHeaderFieldsKey": headers}];
         UIImage *thumbnail = [self generateThumbImage:asset atTime:timeStamp];
 
-        // Save to temp directory
-        NSString* tempDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
-        tempDirectory = [tempDirectory stringByAppendingString:@"/thumbnails/"];
-        // Create thumbnail directory if not exists
-        [[NSFileManager defaultManager] createDirectoryAtPath:tempDirectory withIntermediateDirectories:YES attributes:nil error:nil];
+        
         // Clean directory
         unsigned long long size = [self sizeOfFolderAtPath:tempDirectory];
         if (size >= cacheDirSize) {
@@ -41,13 +56,10 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
         
         // Generate thumbnail
         NSData *data = nil;
-        NSString *fullPath = nil;
         if ([format isEqual: @"png"]) {
             data = UIImagePNGRepresentation(thumbnail);
-            fullPath = [tempDirectory stringByAppendingPathComponent: [NSString stringWithFormat:@"thumb-%@.png",[[NSProcessInfo processInfo] globallyUniqueString]]];
         } else {
             data = UIImageJPEGRepresentation(thumbnail, 1.0);
-            fullPath = [tempDirectory stringByAppendingPathComponent: [NSString stringWithFormat:@"thumb-%@.jpeg",[[NSProcessInfo processInfo] globallyUniqueString]]];
         }
 
         NSFileManager *fileManager = [NSFileManager defaultManager];

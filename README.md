@@ -55,7 +55,7 @@ createThumbnail({
 | format    | `String` (default `jpeg`) | Thumbnail format, can be one of: `jpeg`, or `png`                         |
 | dirSize   | `Number` (default `100`)  | Maximum size of the cache directory (in megabytes)                        |
 | headers   |         `Object`          | Headers to load the video with. e.g. `{ Authorization: 'someAuthToken' }` |
-| cacheName   |         `String` (optional)          | Cache name for this thumbnail. If specify, this thumbnail will be stored and reuse next time. EX: `video-1` |
+| cacheName   |         `String` (optional)          | Cache name for this thumbnail to avoid duplicate generation. If specified, and a thumbnail already exists with the same cache name, it will be returned without generating a new one. |
 
 ## Response Object
 

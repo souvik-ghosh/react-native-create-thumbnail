@@ -59,6 +59,8 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
             WritableMap map = Arguments.createMap();
             map.putString("path", "file://" + thumbnailDir + '/' + fileName);
             Bitmap image = BitmapFactory.decodeFile(file.getAbsolutePath());
+            map.putDouble("size", image.getByteCount());
+            map.putString("mime", "image/" + format);
             map.putDouble("width", image.getWidth());
             map.putDouble("height", image.getHeight());
 
@@ -68,9 +70,7 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
         long cacheDirSize = dirSize * 1024 * 1024;
         OutputStream fOut = null;
         try {
-            File dir = createDirIfNotExists(thumbnailDir);
             Bitmap image = getBitmapAtTime(this.reactContext, filePath, timeStamp, headers);
-            File file = new File(thumbnailDir, fileName);
             file.createNewFile();
             fOut = new FileOutputStream(file);
 
@@ -92,6 +92,8 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
 
             WritableMap map = Arguments.createMap();
             map.putString("path", "file://" + thumbnailDir + '/' + fileName);
+            map.putDouble("size", image.getByteCount());
+            map.putString("mime", "image/" + format);
             map.putDouble("width", image.getWidth());
             map.putDouble("height", image.getHeight());
 

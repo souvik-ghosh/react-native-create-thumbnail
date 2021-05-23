@@ -14,7 +14,7 @@ export default function App() {
 
     createThumbnail({
       url: path,
-      timeStamp
+      timeStamp: parseInt(timeStamp)
     })
       .then(response => {
         setThumbnail(response.path);

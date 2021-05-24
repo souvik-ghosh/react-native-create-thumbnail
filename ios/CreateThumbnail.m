@@ -28,7 +28,7 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
             UIImage *thumbnail = [UIImage imageWithData:imageData];
             resolve(@{
                 @"path"     : fullPath,
-                @"size"     : [NSNumber numberWithFloat: data.length],
+                @"size"     : [NSNumber numberWithFloat: imageData.length],
                 @"mime"     : [NSString stringWithFormat: @"image/%@", format],
                 @"width"    : [NSNumber numberWithFloat: thumbnail.size.width],
                 @"height"   : [NSNumber numberWithFloat: thumbnail.size.height]

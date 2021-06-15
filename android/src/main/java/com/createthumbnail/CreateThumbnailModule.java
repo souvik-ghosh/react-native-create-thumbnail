@@ -140,7 +140,7 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
     private static Bitmap getBitmapAtTime(Context context, String filePath, int time, Map headers) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         if (URLUtil.isFileUrl(filePath)) {
-            retriever.setDataSource(Uri.decode(filePath).replace("file://", ""));
+            retriever.setDataSource(filePath.replace("file://", ""));
         } else if (filePath.contains("content://")) {
             retriever.setDataSource(context, Uri.parse(filePath));
         } else {

@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -140,7 +142,14 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
     private static Bitmap getBitmapAtTime(Context context, String filePath, int time, Map headers) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         if (URLUtil.isFileUrl(filePath)) {
-            retriever.setDataSource(filePath.replace("file://", ""));
+            String decodedPath;
+            try {
+                decodedPath = URLDecoder.decode(filePath, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                decodedPath = filePath;
+            }
+
+            retriever.setDataSource(decodedPath.replace("file://", ""));
         } else if (filePath.contains("content://")) {
             retriever.setDataSource(context, Uri.parse(filePath));
         } else {

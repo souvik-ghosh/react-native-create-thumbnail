@@ -1,6 +1,9 @@
-import { NativeModules } from "react-native";
+import CreateThumbnail, { createThumbnail } from "./src/createThumbnail";
+import useThumbnail from "./src/useThumbnail";
 
-const { CreateThumbnail } = NativeModules;
+export {
+  createThumbnail,
+  useThumbnail,
+};
 
-export const { create: createThumbnail } = CreateThumbnail;
 export default CreateThumbnail;

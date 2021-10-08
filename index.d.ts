@@ -20,6 +20,7 @@ declare module "react-native-create-thumbnail" {
 
   export interface CreateThumbnail {
     createThumbnail(config: Config): Promise<Thumbnail>;
+    useThumbnail(url: string, config?: Config): string;
   }
 
   const CreateThumbnail: CreateThumbnail;

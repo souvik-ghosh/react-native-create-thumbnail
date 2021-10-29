@@ -10,8 +10,10 @@ import android.text.TextUtils;
 import android.webkit.URLUtil;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.GuardedResultAsyncTask;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
@@ -25,6 +27,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,62 +49,88 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void create(ReadableMap options, Promise promise) {
-        String filePath = options.hasKey("url") ? options.getString("url") : "";
-        String format = options.hasKey("format") ? options.getString("format") : "jpeg";
-        String cacheName = options.hasKey("cacheName") ? options.getString("cacheName") : "";
-        int timeStamp = options.hasKey("timeStamp") ? options.getInt("timeStamp") : 0;
-        int dirSize = options.hasKey("dirSize") ? options.getInt("dirSize") : 100;
-        HashMap headers = options.hasKey("headers") ? options.getMap("headers").toHashMap() : new HashMap<String, String>();
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        String thumbnailDir = reactContext.getApplicationContext().getCacheDir().getAbsolutePath() + "/thumbnails";
-        String fileName = TextUtils.isEmpty(cacheName) ? ("thumb-" + UUID.randomUUID().toString()) : cacheName + "." + format;
-        File dir = createDirIfNotExists(thumbnailDir);
-        File file = new File(thumbnailDir, fileName);
-        if (file.exists()) {
-            WritableMap map = Arguments.createMap();
-            map.putString("path", "file://" + thumbnailDir + '/' + fileName);
-            Bitmap image = BitmapFactory.decodeFile(file.getAbsolutePath());
-            map.putDouble("size", image.getByteCount());
-            map.putString("mime", "image/" + format);
-            map.putDouble("width", image.getWidth());
-            map.putDouble("height", image.getHeight());
+        new ProcessDataTask(reactContext, promise, options).execute();
+    }
 
-            promise.resolve(map);
-            return;
+    private static class ProcessDataTask extends GuardedResultAsyncTask<ReadableMap> {
+        private final WeakReference<Context> weakContext;
+        private final Promise promise;
+        private final ReadableMap options;
+
+        protected ProcessDataTask(ReactContext reactContext, Promise promise, ReadableMap options) {
+            super(reactContext.getExceptionHandler());
+            this.weakContext = new WeakReference<>(reactContext.getApplicationContext());
+            this.promise = promise;
+            this.options = options;
         }
-        long cacheDirSize = dirSize * 1024 * 1024;
-        OutputStream fOut = null;
-        try {
-            Bitmap image = getBitmapAtTime(this.reactContext, filePath, timeStamp, headers);
-            file.createNewFile();
-            fOut = new FileOutputStream(file);
 
-            // 100 means no compression, the lower you go, the stronger the compression
-            if (format == "png") {
-                image.compress(Bitmap.CompressFormat.PNG, 100, fOut);
-            } else {
-                image.compress(Bitmap.CompressFormat.JPEG, 90, fOut);
+        @Override
+        protected ReadableMap doInBackgroundGuarded() {
+            String format = options.hasKey("format") ? options.getString("format") : "jpeg";
+            String cacheName = options.hasKey("cacheName") ? options.getString("cacheName") : "";
+
+            String thumbnailDir = weakContext.get().getApplicationContext().getCacheDir().getAbsolutePath() + "/thumbnails";
+            File cacheDir = createDirIfNotExists(thumbnailDir);
+            if (!TextUtils.isEmpty(cacheName)) {
+                File file = new File(thumbnailDir, cacheName + "." + format);
+                if (file.exists()) {
+                    WritableMap map = Arguments.createMap();
+                    map.putString("path", "file://" + file.getAbsolutePath());
+                    Bitmap image = BitmapFactory.decodeFile(file.getAbsolutePath());
+                    map.putDouble("size", image.getByteCount());
+                    map.putString("mime", "image/" + format);
+                    map.putDouble("width", image.getWidth());
+                    map.putDouble("height", image.getHeight());
+                    return map;
+                }
             }
 
-            fOut.flush();
-            fOut.close();
+            String filePath = options.hasKey("url") ? options.getString("url") : "";
+            int dirSize = options.hasKey("dirSize") ? options.getInt("dirSize") : 100;
+            int timeStamp = options.hasKey("timeStamp") ? options.getInt("timeStamp") : 0;
+            HashMap headers = options.hasKey("headers") ? options.getMap("headers").toHashMap() : new HashMap<String, String>();
+            String fileName = TextUtils.isEmpty(cacheName) ? ("thumb-" + UUID.randomUUID().toString()) : cacheName + "." + format;
+            OutputStream fOut = null;
+            try {
+                File file = new File(cacheDir, fileName);
+                Context context = weakContext.get();
+                Bitmap image = getBitmapAtTime(context, filePath, timeStamp, headers);
+                file.createNewFile();
+                fOut = new FileOutputStream(file);
 
-            long newSize = image.getByteCount() + getDirSize(dir);
-            // free up some cached data if size of cache dir exceeds CACHE_DIR_MAX_SIZE
-            if (newSize > cacheDirSize) {
-                cleanDir(dir, cacheDirSize / 2);
+                // 100 means no compression, the lower you go, the stronger the compression
+                if (format.equals("png")) {
+                    image.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+                } else {
+                    image.compress(Bitmap.CompressFormat.JPEG, 90, fOut);
+                }
+
+                fOut.flush();
+                fOut.close();
+
+                long cacheDirSize = (long) dirSize * 1024 * 1024;
+                long newSize = image.getByteCount() + getDirSize(cacheDir);
+                // free up some cached data if size of cache dir exceeds CACHE_DIR_MAX_SIZE
+                if (newSize > cacheDirSize) {
+                    cleanDir(cacheDir, cacheDirSize / 2);
+                }
+
+                WritableMap map = Arguments.createMap();
+                map.putString("path", "file://" + file.getAbsolutePath());
+                map.putDouble("size", image.getByteCount());
+                map.putString("mime", "image/" + format);
+                map.putDouble("width", image.getWidth());
+                map.putDouble("height", image.getHeight());
+                return map;
+            } catch (Exception e) {
+                promise.reject("CreateThumbnail_ERROR", e);
             }
+            return null;
+        }
 
-            WritableMap map = Arguments.createMap();
-            map.putString("path", "file://" + thumbnailDir + '/' + fileName);
-            map.putDouble("size", image.getByteCount());
-            map.putString("mime", "image/" + format);
-            map.putDouble("width", image.getWidth());
-            map.putDouble("height", image.getHeight());
-
-            promise.resolve(map);
-        } catch (Exception e) {
-            promise.reject("CreateThumbnail_ERROR", e);
+        @Override
+        protected void onPostExecuteGuarded(ReadableMap readableArray) {
+            promise.resolve(readableArray);
         }
     }
 

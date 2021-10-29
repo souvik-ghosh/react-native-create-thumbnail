@@ -47,32 +47,36 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
         }
 
         AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:vidURL options:@{@"AVURLAssetHTTPHeaderFieldsKey": headers}];
-        UIImage *thumbnail = [self generateThumbImage:asset atTime:timeStamp];
+        [self generateThumbImage:asset atTime:timeStamp completion:^(UIImage *thumbnail) {
+            // Clean directory
+            unsigned long long size = [self sizeOfFolderAtPath:tempDirectory];
+            if (size >= cacheDirSize) {
+                [self cleanDir:tempDirectory forSpace:cacheDirSize / 2];
+            }
+            
+            // Generate thumbnail
+            NSData *data = nil;
+            if ([format isEqual: @"png"]) {
+                data = UIImagePNGRepresentation(thumbnail);
+            } else {
+                data = UIImageJPEGRepresentation(thumbnail, 1.0);
+            }
+
+            NSFileManager *fileManager = [NSFileManager defaultManager];
+            [fileManager createFileAtPath:fullPath contents:data attributes:nil];
+            resolve(@{
+                @"path"     : fullPath,
+                @"size"     : [NSNumber numberWithFloat: data.length],
+                @"mime"     : [NSString stringWithFormat: @"image/%@", format],
+                @"width"    : [NSNumber numberWithFloat: thumbnail.size.width],
+                @"height"   : [NSNumber numberWithFloat: thumbnail.size.height]
+            });
+        } failure:^(NSError *error) {
+            reject(error.domain, error.description, nil);
+        }];
 
         
-        // Clean directory
-        unsigned long long size = [self sizeOfFolderAtPath:tempDirectory];
-        if (size >= cacheDirSize) {
-            [self cleanDir:tempDirectory forSpace:cacheDirSize / 2];
-        }
         
-        // Generate thumbnail
-        NSData *data = nil;
-        if ([format isEqual: @"png"]) {
-            data = UIImagePNGRepresentation(thumbnail);
-        } else {
-            data = UIImageJPEGRepresentation(thumbnail, 1.0);
-        }
-
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        [fileManager createFileAtPath:fullPath contents:data attributes:nil];
-        resolve(@{
-            @"path"     : fullPath,
-            @"size"     : [NSNumber numberWithFloat: data.length],
-            @"mime"     : [NSString stringWithFormat: @"image/%@", format],
-            @"width"    : [NSNumber numberWithFloat: thumbnail.size.width],
-            @"height"   : [NSNumber numberWithFloat: thumbnail.size.height]
-        });
     } @catch(NSException *e) {
         reject(e.name, e.reason, nil);
     }
@@ -106,26 +110,20 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
     return;
 }
 
-- (UIImage *) generateThumbImage: (AVURLAsset *)asset atTime:(int)timeStamp {
-    AVAssetImageGenerator *generator = [
-      [AVAssetImageGenerator alloc] initWithAsset:asset
-    ];
+- (void) generateThumbImage:(AVURLAsset *)asset atTime:(int)timeStamp completion:(void (^)(UIImage* thumbnail))completion failure:(void (^)(NSError* error))failure {
+    AVAssetImageGenerator *generator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
     generator.appliesPreferredTrackTransform = YES;
-    CMTime time = [asset duration];
-    time.value = time.timescale * timeStamp / 1000;
-    CMTime actTime = CMTimeMake(0, 0);
-    NSError *err = NULL;
-    CGImageRef imageRef = [generator copyCGImageAtTime:time actualTime:&actTime error:&err];
-    if (err) {
-        NSException *e = [NSException
-            exceptionWithName:@"FileNotSupportedException"
-            reason:@"File doesn't exist or not supported"
-            userInfo:nil];
-        @throw e;
-    }
-    UIImage *thumbnail = [UIImage imageWithCGImage:imageRef];
-    CGImageRelease(imageRef);
-    return thumbnail;
+    generator.maximumSize = CGSizeMake(512, 512);
+    CMTime time = CMTimeMake(timeStamp, 1000);
+    AVAssetImageGeneratorCompletionHandler handler = ^(CMTime timeRequested, CGImageRef image, CMTime timeActual, AVAssetImageGeneratorResult result, NSError *error) {
+        if (result == AVAssetImageGeneratorSucceeded) {
+            UIImage *thumbnail = [UIImage imageWithCGImage:image];
+            completion(thumbnail);
+        } else {
+            failure(error);
+        }
+    };
+    [generator generateCGImagesAsynchronouslyForTimes:[NSArray arrayWithObject:[NSValue valueWithCMTime:time]] completionHandler:handler];
 }
 
 @end

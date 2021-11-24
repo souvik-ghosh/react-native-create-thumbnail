@@ -1,26 +1,22 @@
-import React, { useState } from "react";
-import { Image, Text, View, StyleSheet, TextInput, Button } from "react-native";
-import { createThumbnail } from "react-native-create-thumbnail";
+import React, {useState} from 'react';
+import {
+  Image,
+  Text,
+  View,
+  StyleSheet,
+  TextInput,
+  Button,
+  ActivityIndicator,
+} from 'react-native';
+import {createThumbnail} from 'react-native-create-thumbnail';
+
+const placeholderImage = require('./assets/placeholder-image.png');
 
 export default function App() {
   const [path, setPath] = useState('');
   const [thumbnail, setThumbnail] = useState('');
-  const [timeStamp, setTimeStamp] = useState('');
-
-  const generate = () => {
-    if (!path) {
-      return;
-    }
-
-    createThumbnail({
-      url: path,
-      timeStamp: parseInt(timeStamp)
-    })
-      .then(response => {
-        setThumbnail(response.path);
-      })
-      .catch(err => console.log({ err }));
-  };
+  const [timeStamp, setTimeStamp] = useState('1000');
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -32,6 +28,7 @@ export default function App() {
         placeholder="Paste video url"
       />
       <TextInput
+        keyboardType="numeric"
         value={timeStamp}
         onChangeText={setTimeStamp}
         style={styles.timeInput}
@@ -39,49 +36,78 @@ export default function App() {
       />
       <Button
         title="Generate Thumbnail"
-        onPress={generate}
+        disabled={isLoading}
+        onPress={generateThumbnail}
       />
       <Text style={styles.welcome}>☆THUMBNAIL☆</Text>
-      {!!thumbnail && (
-        <Image style={styles.image} source={{ uri: thumbnail }} />
-      )}
+      <View style={styles.image}>
+        {isLoading ? (
+          <ActivityIndicator size="large" />
+        ) : (
+          <Image
+            style={styles.image}
+            source={thumbnail ? {uri: thumbnail} : placeholderImage}
+          />
+        )}
+      </View>
     </View>
   );
+
+  async function generateThumbnail() {
+    if (!path) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await createThumbnail({
+        url: path,
+        timeStamp: parseInt(timeStamp, 10),
+      });
+      setThumbnail(response.path);
+    } catch (err) {
+      console.log({err});
+    } finally {
+      setIsLoading(false);
+    }
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5FCFF"
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
   },
   welcome: {
     fontSize: 20,
-    textAlign: "center",
-    margin: 10
+    textAlign: 'center',
+    margin: 20,
   },
   instructions: {
-    textAlign: "center",
-    color: "#333333",
-    marginBottom: 5
+    textAlign: 'center',
+    color: '#333333',
+    marginBottom: 20,
   },
   image: {
     height: 150,
     width: 250,
-    backgroundColor: "lightgrey"
+    backgroundColor: 'lightgrey',
+    justifyContent: 'center',
   },
   pathInput: {
-    height: 35,
     backgroundColor: '#eaeaea',
     width: '80%',
-    paddingHorizontal: 10
+    paddingHorizontal: 10,
+    color: 'black',
   },
   timeInput: {
-    height: 35,
     backgroundColor: '#eaeaea',
     width: '40%',
     paddingHorizontal: 10,
-    marginTop: 10
-  }
+    margin: 20,
+    color: 'black',
+  },
 });

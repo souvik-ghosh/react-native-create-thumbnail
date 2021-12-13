@@ -53,9 +53,9 @@ createThumbnail({
 | url       |    `String` (required)    | Path to video file (local or remote)                                      |
 | timeStamp |  `Number` (default `0`)   | Thumbnail timestamp (in milliseconds)                                     |
 | format    | `String` (default `jpeg`) | Thumbnail format, can be one of: `jpeg`, or `png`                         |
-| dirSize   | `Number` (default `100`)  | Maximum size of the cache directory (in megabytes)                        |
+| dirSize   | `Number` (default `100`)  | Maximum size of the cache directory (in megabytes). When this directory is full, the previously generated thumbnails will be deleted to clear about half of it's size.                        |
 | headers   |         `Object`          | Headers to load the video with. e.g. `{ Authorization: 'someAuthToken' }` |
-| cacheName   |         `String` (optional)          | Cache name for this thumbnail to avoid duplicate generation. If specified, and a thumbnail already exists with the same cache name, it will be returned without generating a new one. |
+| cacheName   |         `String` (optional)          | Cache name for this thumbnail to avoid duplicate generation. If specified, and a thumbnail already exists with the same cache name, it will be returned instead of generating a new one. |
 
 ## Response Object
 
@@ -79,6 +79,7 @@ READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 
 - Remote videos aren't supported on android sdk_version < 14.
 - This is a **Native Module**, so it won't work in expo managed projects.
+- This library heavily depends on the native API's to generate the thumbnails. Thus it can only generate from the video formats/codecs that are supported by the device's OS.
 
 #### Credits
 

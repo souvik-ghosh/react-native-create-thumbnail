@@ -26,6 +26,7 @@ export default function App() {
         onChangeText={setPath}
         style={styles.pathInput}
         placeholder="Paste video url"
+        placeholderTextColor="lightgrey"
       />
       <TextInput
         keyboardType="numeric"
@@ -67,7 +68,7 @@ export default function App() {
       });
       setThumbnail(response.path);
     } catch (err) {
-      console.log({err});
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -85,6 +86,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     margin: 20,
+    color: 'black',
   },
   instructions: {
     textAlign: 'center',
@@ -102,6 +104,8 @@ const styles = StyleSheet.create({
     width: '80%',
     paddingHorizontal: 10,
     color: 'black',
+    borderColor: 'lightgrey',
+    borderWidth: 1,
   },
   timeInput: {
     backgroundColor: '#eaeaea',
@@ -109,5 +113,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     margin: 20,
     color: 'black',
+    borderColor: 'lightgrey',
+    borderWidth: 1,
   },
 });

@@ -1,7 +1,7 @@
 {
   "name": "react-native-create-thumbnail",
   "title": "React Native Create Thumbnail",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "iOS/Android thumbnail generator with support for both local and remote videos",
   "main": "index.js",
   "repository": {
@@ -18,5 +18,8 @@
   },
   "license": "MIT",
   "licenseFilename": "LICENSE",
-  "readmeFilename": "README.md"
+  "readmeFilename": "README.md",
+  "peerDependencies": {
+    "react-native": ">=0.59.0"
+  }
 }

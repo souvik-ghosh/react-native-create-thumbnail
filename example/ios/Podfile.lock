@@ -284,7 +284,7 @@ PODS:
   - React-jsinspector (0.69.5)
   - React-logger (0.69.5):
     - glog
-  - react-native-create-thumbnail (1.5.1):
+  - react-native-create-thumbnail (1.6.2):
     - React-Core
   - React-perflogger (0.69.5)
   - React-RCTActionSheet (0.69.5):
@@ -535,7 +535,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: e42f0b46de293a026c2fb20e524d4fe09f81f575
   React-jsinspector: e385fb7a1440ae3f3b2cd1a139ca5aadaab43c10
   React-logger: 15c734997c06fe9c9b88e528fb7757601e7a56df
-  react-native-create-thumbnail: dedcb7cd3d14a4b6cc2026563197242081edb52b
+  react-native-create-thumbnail: 6f7fc448c639e4502f73951f5f8bdfb0573caff2
   React-perflogger: 367418425c5e4a9f0f80385ee1eaacd2a7348f8e
   React-RCTActionSheet: e4885e7136f98ded1137cd3daccc05eaed97d5a6
   React-RCTAnimation: 7c5a74f301c9b763343ba98a3dd776ed2676993f

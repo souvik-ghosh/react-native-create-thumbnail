@@ -113,7 +113,9 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
 - (void) generateThumbImage:(AVURLAsset *)asset atTime:(int)timeStamp completion:(void (^)(UIImage* thumbnail))completion failure:(void (^)(NSError* error))failure {
     AVAssetImageGenerator *generator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
     generator.appliesPreferredTrackTransform = YES;
-    generator.maximumSize = CGSizeMake(512, 512);
+    generator.maximumSize = CGSizeMake(512, 512);    
+    generator.requestedTimeToleranceBefore = CMTimeMake(0, 1000);
+    generator.requestedTimeToleranceAfter = CMTimeMake(0, 1000);
     CMTime time = CMTimeMake(timeStamp, 1000);
     AVAssetImageGeneratorCompletionHandler handler = ^(CMTime timeRequested, CGImageRef image, CMTime timeActual, AVAssetImageGeneratorResult result, NSError *error) {
         if (result == AVAssetImageGeneratorSucceeded) {

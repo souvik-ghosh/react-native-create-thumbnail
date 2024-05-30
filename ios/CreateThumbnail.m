@@ -12,6 +12,9 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
     int dirSize = [[config objectForKey:@"dirSize"] intValue] ?: 100;
     NSString *cacheName = (NSString *)[config objectForKey:@"cacheName"];
     NSDictionary *headers = config[@"headers"] ?: @{};
+    CGFloat maxWidth = [config[@"maxWidth"] floatValue] ?: 512;
+    CGFloat maxHeight = [config[@"maxHeight"] floatValue] ?: 512;
+    int timeToleranceMs = [config[@"timeToleranceMs"] intValue] ?: 2000;
 
     unsigned long long cacheDirSize = dirSize * 1024 * 1024;
 
@@ -47,7 +50,7 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
         }
 
         AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:vidURL options:@{@"AVURLAssetHTTPHeaderFieldsKey": headers}];
-        [self generateThumbImage:asset atTime:timeStamp completion:^(UIImage *thumbnail) {
+        [self generateThumbImage:asset atTime:timeStamp maxWidth:maxWidth maxHeight:maxHeight timeToleranceMs:timeToleranceMs completion:^(UIImage *thumbnail) {
             // Clean directory
             unsigned long long size = [self sizeOfFolderAtPath:tempDirectory];
             if (size >= cacheDirSize) {
@@ -110,12 +113,12 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
     return;
 }
 
-- (void) generateThumbImage:(AVURLAsset *)asset atTime:(int)timeStamp completion:(void (^)(UIImage* thumbnail))completion failure:(void (^)(NSError* error))failure {
+- (void) generateThumbImage:(AVURLAsset *)asset atTime:(int)timeStamp maxWidth:(CGFloat)maxWidth maxHeight:(CGFloat)maxHeight timeToleranceMs:(int)timeToleranceMs completion:(void (^)(UIImage* thumbnail))completion failure:(void (^)(NSError* error))failure {
     AVAssetImageGenerator *generator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
     generator.appliesPreferredTrackTransform = YES;
-    generator.maximumSize = CGSizeMake(512, 512);    
-    generator.requestedTimeToleranceBefore = CMTimeMake(0, 1000);
-    generator.requestedTimeToleranceAfter = CMTimeMake(0, 1000);
+    generator.maximumSize = CGSizeMake(maxWidth, maxHeight);
+    generator.requestedTimeToleranceBefore = CMTimeMake(0, timeToleranceMs / 2);
+    generator.requestedTimeToleranceAfter = CMTimeMake(0, timeToleranceMs / 2);
     CMTime time = CMTimeMake(timeStamp, 1000);
     AVAssetImageGeneratorCompletionHandler handler = ^(CMTime timeRequested, CGImageRef image, CMTime timeActual, AVAssetImageGeneratorResult result, NSError *error) {
         if (result == AVAssetImageGeneratorSucceeded) {

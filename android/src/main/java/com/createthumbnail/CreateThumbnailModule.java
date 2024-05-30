@@ -88,13 +88,15 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
             String filePath = options.hasKey("url") ? options.getString("url") : "";
             int dirSize = options.hasKey("dirSize") ? options.getInt("dirSize") : 100;
             int timeStamp = options.hasKey("timeStamp") ? options.getInt("timeStamp") : 0;
+            int maxWidth = options.hasKey("maxWidth") ? options.getInt("maxWidth") : 512;
+            int maxHeight = options.hasKey("maxHeight") ? options.getInt("maxHeight") : 512;
             HashMap headers = options.hasKey("headers") ? options.getMap("headers").toHashMap() : new HashMap<String, String>();
             String fileName = TextUtils.isEmpty(cacheName) ? ("thumb-" + UUID.randomUUID().toString()) : cacheName + "." + format;
             OutputStream fOut = null;
             try {
                 File file = new File(cacheDir, fileName);
                 Context context = weakContext.get();
-                Bitmap image = getBitmapAtTime(context, filePath, timeStamp, headers);
+                Bitmap image = getBitmapAtTime(context, filePath, timeStamp, maxWidth, maxHeight, headers);
                 file.createNewFile();
                 fOut = new FileOutputStream(file);
 
@@ -168,7 +170,7 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
         return dir;
     }
 
-    private static Bitmap getBitmapAtTime(Context context, String filePath, int time, Map headers) {
+    private static Bitmap getBitmapAtTime(Context context, String filePath, int time, int maxWidth, int maxHeight, Map headers) throws IOException, IllegalStateException {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         if (URLUtil.isFileUrl(filePath)) {
             String decodedPath;
@@ -188,7 +190,7 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
             retriever.setDataSource(filePath, headers);
         }
   
-        Bitmap image = retriever.getFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+        Bitmap image = retriever.getScaledFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC, maxWidth, maxHeight);
         try {
             retriever.release();
         } catch(IOException e) {

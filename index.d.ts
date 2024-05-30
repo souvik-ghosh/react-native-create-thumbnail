@@ -6,6 +6,9 @@ declare module "react-native-create-thumbnail" {
     dirSize?: number;
     headers?: object;
     cacheName?: string;
+    maxWidth?: number;
+    maxHeight?: number;
+    timeToleranceMs?: number;
   }
 
   export interface Thumbnail {

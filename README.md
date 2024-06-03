@@ -53,9 +53,12 @@ createThumbnail({
 | url       |    `String` (required)    | Path to video file (local or remote)                                      |
 | timeStamp |  `Number` (default `0`)   | Thumbnail timestamp (in milliseconds)                                     |
 | format    | `String` (default `jpeg`) | Thumbnail format, can be one of: `jpeg`, or `png`                         |
+| maxWidth  | `Number` (default `512`)  | Max thumbnail width in px                                                 |
+| maxHeight | `Number` (default `512`)  | Max thumbnail height in px                                                |
 | dirSize   | `Number` (default `100`)  | Maximum size of the cache directory (in megabytes). When this directory is full, the previously generated thumbnails will be deleted to clear about half of it's size.                        |
 | headers   |         `Object`          | Headers to load the video with. e.g. `{ Authorization: 'someAuthToken' }` |
 | cacheName   |         `String` (optional)          | Cache name for this thumbnail to avoid duplicate generation. If specified, and a thumbnail already exists with the same cache name, it will be returned instead of generating a new one. |
+| timeToleranceMs | `Number` (default `2000`, Only iOS) | Time tolerance in ms for the system to pick the best matching video frame |
 
 ## Response Object
 

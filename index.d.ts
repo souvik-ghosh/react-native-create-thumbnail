@@ -8,7 +8,14 @@ declare module "react-native-create-thumbnail" {
     cacheName?: string;
     maxWidth?: number;
     maxHeight?: number;
+    /**
+     * iOS Only
+     */
     timeToleranceMs?: number;
+    /**
+     * Android Only
+     */
+    onlySyncedFrames?: boolean;
   }
 
   export interface Thumbnail {

@@ -189,8 +189,17 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
             }
             retriever.setDataSource(filePath, headers);
         }
-  
-        Bitmap image = retriever.getScaledFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC, maxWidth, maxHeight);
+
+        Bitmap image;
+        if (Build.VERSION.SDK_INT >= 27) {
+            image = retriever.getScaledFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC, maxWidth, maxHeight);
+        } else {
+            // 如果在低于 API 27 的版本上，使用其他方法获取帧
+            image = retriever.getFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            if (image != null) {
+                image = Bitmap.createScaledBitmap(image, maxWidth, maxHeight, true);
+            }
+        }
         try {
             retriever.release();
         } catch(IOException e) {

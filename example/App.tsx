@@ -4,11 +4,11 @@ import {
   Text,
   View,
   StyleSheet,
-  TextInput,
   Button,
   ActivityIndicator,
 } from 'react-native';
 import {createThumbnail} from 'react-native-create-thumbnail';
+import Input from './Input';
 
 const placeholderImage = require('./assets/placeholder-image.png');
 
@@ -21,18 +21,17 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Text style={styles.welcome}>☆CreateThumbnail example☆</Text>
-      <TextInput
+      <Input
+        label="Video URL"
         value={path}
         onChangeText={setPath}
-        style={styles.pathInput}
         placeholder="Paste video url"
-        placeholderTextColor="lightgrey"
       />
-      <TextInput
+      <Input
+        label="Timestamp"
         keyboardType="numeric"
         value={timeStamp}
         onChangeText={setTimeStamp}
-        style={styles.timeInput}
         placeholder="Timestamp"
       />
       <Button
@@ -78,14 +77,15 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: '#f5f6fa',
+    padding: 20,
+    paddingTop: 50,
   },
   welcome: {
     fontSize: 20,
     textAlign: 'center',
-    margin: 20,
+    margin: 30,
     color: 'black',
   },
   instructions: {
@@ -98,22 +98,5 @@ const styles = StyleSheet.create({
     width: 250,
     backgroundColor: 'lightgrey',
     justifyContent: 'center',
-  },
-  pathInput: {
-    backgroundColor: '#eaeaea',
-    width: '80%',
-    paddingHorizontal: 10,
-    color: 'black',
-    borderColor: 'lightgrey',
-    borderWidth: 1,
-  },
-  timeInput: {
-    backgroundColor: '#eaeaea',
-    width: '40%',
-    paddingHorizontal: 10,
-    margin: 20,
-    color: 'black',
-    borderColor: 'lightgrey',
-    borderWidth: 1,
   },
 });

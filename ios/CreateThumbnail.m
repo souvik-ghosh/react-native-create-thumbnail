@@ -42,15 +42,14 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
         NSURL *vidURL = nil;
         NSString *url_ = [url lowercaseString];
 
-        if ([url_ hasPrefix:@"http://"] || [url_ hasPrefix:@"https://"] || [url_ hasPrefix:@"file://"]) {
+        if ([url_ hasPrefix:@"http://"] || [url_ hasPrefix:@"https://"]) {
             vidURL = [NSURL URLWithString:url];
         } else {
-            // Consider it's file url path 
+            // Consider it's file url path
             vidURL = [NSURL fileURLWithPath:url];
         }
-
-        AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:vidURL options:@{@"AVURLAssetHTTPHeaderFieldsKey": headers}];
-        [self generateThumbImage:asset atTime:timeStamp maxWidth:maxWidth maxHeight:maxHeight timeToleranceMs:timeToleranceMs completion:^(UIImage *thumbnail) {
+        
+        void (^ completionBlock)(UIImage *thumbnail) = ^(UIImage *thumbnail) {
             // Clean directory
             unsigned long long size = [self sizeOfFolderAtPath:tempDirectory];
             if (size >= cacheDirSize) {
@@ -74,11 +73,19 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
                 @"width"    : [NSNumber numberWithFloat: thumbnail.size.width],
                 @"height"   : [NSNumber numberWithFloat: thumbnail.size.height]
             });
-        } failure:^(NSError *error) {
-            reject(error.domain, error.description, nil);
-        }];
-
+        };
         
+        void (^ failBlock)(NSError *error) = ^(NSError *error) {
+            reject(error.domain, error.description, nil);
+        };
+        
+        if ([url_ hasPrefix:@"http://"] || [url_ hasPrefix:@"https://"]) {
+            AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:vidURL options:@{@"AVURLAssetHTTPHeaderFieldsKey": headers}];
+            [self generateThumbImage:asset atTime:timeStamp maxWidth:maxWidth maxHeight:maxHeight timeToleranceMs:timeToleranceMs completion:completionBlock failure:failBlock];
+        } else {
+            AVAsset *asset = [AVAsset assetWithURL:vidURL];
+            [self generateLocalMediaThumbImage:asset atTime:timeStamp completion:completionBlock failure:failBlock];
+        }
         
     } @catch(NSException *e) {
         reject(e.name, e.reason, nil);
@@ -129,6 +136,25 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
         }
     };
     [generator generateCGImagesAsynchronouslyForTimes:[NSArray arrayWithObject:[NSValue valueWithCMTime:time]] completionHandler:handler];
+}
+
+- (void) generateLocalMediaThumbImage:(AVAsset *)asset atTime:(int)timeStamp completion:(void (^)(UIImage* thumbnail))completion failure:(void (^)(NSError* error))failure {
+    AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
+    imageGenerator.appliesPreferredTrackTransform = YES;
+    CMTime time = CMTimeMake(timeStamp, 1000);
+    NSError *error = nil;
+    CMTime actualTime;
+    
+    CGImageRef imageRef = [imageGenerator copyCGImageAtTime:time actualTime:&actualTime error:&error];
+    if (error) {
+        NSLog(@"Error generating thumbnail: %@", error.localizedDescription);
+        failure(error);
+        return;
+    }
+    
+    UIImage *thumbnail = [[UIImage alloc] initWithCGImage:imageRef];
+    CGImageRelease(imageRef);
+    completion(thumbnail);
 }
 
 @end

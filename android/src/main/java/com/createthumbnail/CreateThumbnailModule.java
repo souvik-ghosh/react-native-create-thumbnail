@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Build.VERSION;
 import android.text.TextUtils;
 import android.webkit.URLUtil;
@@ -26,8 +27,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.lang.ref.WeakReference;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -190,8 +191,17 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
             }
             retriever.setDataSource(filePath, headers);
         }
-  
-        Bitmap image = retriever.getScaledFrameAtTime(time * 1000, onlySyncedFrames ? MediaMetadataRetriever.OPTION_CLOSEST_SYNC : MediaMetadataRetriever.OPTION_CLOSEST, maxWidth, maxHeight);
+
+        Bitmap image;
+        if (Build.VERSION.SDK_INT >= 27) {
+            image = retriever.getScaledFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC, maxWidth, maxHeight);
+        } else {
+            // If on versions lower than API 27, use other methods to get frames
+            image = retriever.getFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            if (image != null) {
+                image = Bitmap.createScaledBitmap(image, maxWidth, maxHeight, true);
+            }
+        }
         try {
             retriever.release();
         } catch(IOException e) {

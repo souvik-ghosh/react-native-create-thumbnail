@@ -59,6 +59,7 @@ createThumbnail({
 | headers   |         `Object`          | Headers to load the video with. e.g. `{ Authorization: 'someAuthToken' }` |
 | cacheName   |         `String` (optional)          | Cache name for this thumbnail to avoid duplicate generation. If specified, and a thumbnail already exists with the same cache name, it will be returned instead of generating a new one. |
 | timeToleranceMs | `Number` (default `2000`, Only iOS) | Time tolerance in ms for the system to pick the best matching video frame |
+| onlySyncedFrames | `Boolean` (default `true`, Only Android) | Specify how Android target frames. Use `true` to retrieve a sync frame that has a timestamp closest to the specified one. Use `false` to retrieve a frame that may or may not be a sync frame but is closest to the specified timestamp. |
 
 ## Response Object
 

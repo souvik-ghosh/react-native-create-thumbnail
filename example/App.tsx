@@ -12,8 +12,10 @@ import Input from './Input';
 
 const placeholderImage = require('./assets/placeholder-image.png');
 
+const sampleVideoUrl = 'https://videos.pexels.com/video-files/4763824/4763824-uhd_2560_1440_24fps.mp4';
+
 export default function App() {
-  const [path, setPath] = useState('');
+  const [path, setPath] = useState(sampleVideoUrl);
   const [thumbnail, setThumbnail] = useState('');
   const [timeStamp, setTimeStamp] = useState('1000');
   const [isLoading, setIsLoading] = useState(false);

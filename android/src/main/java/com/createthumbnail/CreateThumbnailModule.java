@@ -58,7 +58,7 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
                 handler.post(() -> {
                     promise.resolve(data);
                 });
-            } catch (IOException e) {
+            } catch (IOException | IllegalStateException e) {
                 handler.post(() -> {
                     promise.reject("CreateThumbnail_ERROR", e);
                 });

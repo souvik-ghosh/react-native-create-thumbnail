@@ -115,8 +115,8 @@ afterEvaluate { project ->
     task androidJavadoc(type: Javadoc) {
         source = android.sourceSets.main.java.srcDirs
         classpath += files(android.bootClasspath)
-        project.getConfigurations().implementation.setCanBeResolved(true)
-        classpath += files(project.getConfigurations().getByName('implementation').asList())
+        // Removed setCanBeResolved for Gradle 9 compatibility
+        // classpath += files(project.getConfigurations().getByName('implementation').asList())
         include '**/*.java'
     }
 
@@ -134,7 +134,7 @@ afterEvaluate { project ->
     android.libraryVariants.all { variant ->
         def name = variant.name.capitalize()
         task "jar${name}"(type: Jar, dependsOn: variant.javaCompileProvider) {
-            from variant.javaCompileProvider.get().destinationDir
+            from variant.javaCompileProvider.get().destinationDirectory
         }
     }
 
@@ -152,17 +152,5 @@ afterEvaluate { project ->
     }
 }
 
-def myAttribute = Attribute.of("com.android.build.api.attributes.BuildTypeAttr", String)
-
-dependencies.attributesSchema {
-    // registers this attribute to the attributes schema
-    attribute(myAttribute)
-}
-
-configurations {
-    implementation {
-        attributes {
-            attribute(myAttribute, "release")
-        }
-    }
-}
+// Removed attribute configuration for Gradle 9 compatibility
+// This is not needed for React Native 0.82+

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import { useState } from 'react';
 import {
   Image,
   Text,
@@ -7,7 +7,7 @@ import {
   Button,
   ActivityIndicator,
 } from 'react-native';
-import {createThumbnail} from 'react-native-create-thumbnail';
+import { createThumbnail } from 'react-native-create-thumbnail';
 import Input from './Input';
 
 const placeholderImage = require('./assets/placeholder-image.png');

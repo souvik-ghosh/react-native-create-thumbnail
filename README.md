@@ -82,7 +82,7 @@ READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 #### Limitations
 
 - Remote videos aren't supported on android sdk_version < 14.
-- This is a **Native Module**, so it won't work in expo managed projects.
+- This is a **Native Module**, so it won't work in Expo Go.
 - This library heavily depends on the native API's to generate the thumbnails. Thus it can only generate from the video formats/codecs that are supported by the device's OS.
 
 #### Credits

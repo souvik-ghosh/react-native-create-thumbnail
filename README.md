@@ -55,6 +55,7 @@ createThumbnail({
 | format    | `String` (default `jpeg`) | Thumbnail format, can be one of: `jpeg`, or `png`                         |
 | maxWidth  | `Number` (default `512`)  | Max thumbnail width in px                                                 |
 | maxHeight | `Number` (default `512`)  | Max thumbnail height in px                                                |
+| quality   | `Number` (default `90`)   | Thumbnail quality                                                         |
 | dirSize   | `Number` (default `100`)  | Maximum size of the cache directory (in megabytes). When this directory is full, the previously generated thumbnails will be deleted to clear about half of it's size.                        |
 | headers   |         `Object`          | Headers to load the video with. e.g. `{ Authorization: 'someAuthToken' }` |
 | cacheName   |         `String` (optional)          | Cache name for this thumbnail to avoid duplicate generation. If specified, and a thumbnail already exists with the same cache name, it will be returned instead of generating a new one. |

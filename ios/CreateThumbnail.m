@@ -14,6 +14,7 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
     NSDictionary *headers = config[@"headers"] ?: @{};
     CGFloat maxWidth = [config[@"maxWidth"] floatValue] ?: 512;
     CGFloat maxHeight = [config[@"maxHeight"] floatValue] ?: 512;
+    CGFloat quality = [config[@"quality"] floatValue] ?: 90;
     int timeToleranceMs = [config[@"timeToleranceMs"] intValue] ?: 2000;
 
     unsigned long long cacheDirSize = dirSize * 1024 * 1024;
@@ -61,7 +62,7 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
             if ([format isEqual: @"png"]) {
                 data = UIImagePNGRepresentation(thumbnail);
             } else {
-                data = UIImageJPEGRepresentation(thumbnail, 1.0);
+                data = UIImageJPEGRepresentation(thumbnail, quality / 100);
             }
 
             NSFileManager *fileManager = [NSFileManager defaultManager];

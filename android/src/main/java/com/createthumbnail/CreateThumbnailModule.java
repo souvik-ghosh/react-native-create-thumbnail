@@ -91,6 +91,7 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
         int timeStamp = options.hasKey("timeStamp") ? options.getInt("timeStamp") : 0;
         int maxWidth = options.hasKey("maxWidth") ? options.getInt("maxWidth") : 512;
         int maxHeight = options.hasKey("maxHeight") ? options.getInt("maxHeight") : 512;
+        int quality = options.hasKey("quality") ? options.getInt("quality") : 90;
         boolean onlySyncedFrames = options.hasKey("onlySyncedFrames") ? options.getBoolean("onlySyncedFrames") : true;
         HashMap headers = options.hasKey("headers") ? options.getMap("headers").toHashMap() : new HashMap<String, String>();
         String fileName = TextUtils.isEmpty(cacheName) ? ("thumb-" + UUID.randomUUID().toString()) : cacheName + "." + format;
@@ -101,11 +102,10 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
         file.createNewFile();
         fOut = new FileOutputStream(file);
 
-        // 100 means no compression, the lower you go, the stronger the compression
         if (format.equals("png")) {
-            image.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+            image.compress(Bitmap.CompressFormat.PNG, quality, fOut);
         } else {
-            image.compress(Bitmap.CompressFormat.JPEG, 90, fOut);
+            image.compress(Bitmap.CompressFormat.JPEG, quality, fOut);
         }
 
         fOut.flush();

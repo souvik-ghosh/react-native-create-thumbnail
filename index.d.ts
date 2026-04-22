@@ -8,6 +8,7 @@ declare module "react-native-create-thumbnail" {
     cacheName?: string;
     maxWidth?: number;
     maxHeight?: number;
+    quality?: number;
     /**
      * iOS Only
      */
